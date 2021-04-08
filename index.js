@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const MongoClient = require('mongodb').MongoClient;
+const ObjectID = require('mongodb').ObjectID;
 const bodyParser = require("body-parser");
 const cors = require("cors");
 require('dotenv').config();
@@ -18,6 +19,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 client.connect(err => {
   const booksCollection = client.db("DB_NAME").collection("books");
+  const ordersCollection = client.db("DB_NAME").collection("orders");
 
   app.get('/books', (req, res) => {
     booksCollection.find()
@@ -36,11 +38,35 @@ client.connect(err => {
     })
   })
 
+  app.get("/books/:id", (req,res) => {
+    const id = ObjectID(req.params.id);
+    booksCollection.findOne({_id: id})
+    .then(result => {
+      console.log(result);
+      res.send(result);
+    })
+  })
+
   app.delete('deleteBook/:id', (req, res) => {
     const id = ObjectID(req.params.id);
     console.log('delete this', id);
     booksCollection.findOneAndDelete({_id: id})
     .then(documents => res.send(!!documents.value))
+  })
+
+  app.post("/addOrder", (req,res) => {
+    const newOrder = req.body;
+    ordersCollection.insertOne(newOrder)
+    .then(result => {
+      res.send(result)
+    })
+  })
+
+  app.get("/orders", (req,res) => {
+    ordersCollection.find({})
+    .toArray((err, orders) => {
+      res.send(orders);
+    })
   })
 
 
