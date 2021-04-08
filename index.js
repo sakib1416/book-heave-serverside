@@ -28,6 +28,10 @@ app.get("/", (req,res) => {
     res.send("Hello from the server side");
 });
 
+app.get("/hello", (req,res) => {
+  res.send("Hello there");
+});
+
 
 app.listen(process.env.PORT || 5000, ()=>{
     console.log("Server has started");
