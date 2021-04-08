@@ -18,6 +18,32 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 client.connect(err => {
   const booksCollection = client.db("DB_NAME").collection("books");
+
+  app.get('/books', (req, res) => {
+    booksCollection.find()
+    .toArray((err, items) => {
+        res.send(items)
+      })
+  })
+
+  app.post('/addBook', (req, res) => {
+    const newBook = req.body;
+    console.log('adding new book: ', newBook)
+    booksCollection.insertOne(newBook)
+    .then(result => {
+        console.log('inserted count', result.insertedCount);
+        res.send(result.insertedCount > 0)
+    })
+  })
+
+  app.delete('deleteBook/:id', (req, res) => {
+    const id = ObjectID(req.params.id);
+    console.log('delete this', id);
+    booksCollection.findOneAndDelete({_id: id})
+    .then(documents => res.send(!!documents.value))
+  })
+
+
   console.log("Database connected");
 });
 
@@ -25,7 +51,7 @@ client.connect(err => {
 
 
 app.get("/", (req,res) => {
-    res.send("Hello from the server side");
+    res.send("Hello from the server side port 5000");
 });
 
 app.get("/hello", (req,res) => {
